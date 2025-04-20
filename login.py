@@ -26,7 +26,7 @@ def login():
         if user:
             messagebox.showinfo("Login Success", f"Welcome {username}!")
             root.withdraw()
-            subprocess.Popen(["python", "project/mem.py"])  # ✅ only runs if user is found
+            subprocess.Popen(["python", "mem.py"])  # ✅ only runs if user is found
         else:
             messagebox.showerror("Login Failed", "Invalid username or password")  # ❌ only shows if no user
 
