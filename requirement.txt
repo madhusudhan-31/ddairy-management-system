@@ -1,0 +1,6 @@
+customtkinter 
+tkcalendar 
+mysql-connector-python 
+Pillow 
+tkinter 
+python
