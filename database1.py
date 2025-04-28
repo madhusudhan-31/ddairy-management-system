@@ -1,23 +1,35 @@
 import mysql.connector
 from customtkinter import *
 from tkinter import messagebox
+from dotenv import load_dotenv
+import os
+import json
+from db_password_prompt import get_password
+
+
 
 # ---------------------- Connect to Database ----------------------
 def connect_database():
     global cursor
     global conn
     try:
+        # Load the configuration from the JSON file
+        with open("db_config.json") as config_file:
+            db_config = json.load(config_file)
+        db_password = get_password()
+
+        # Establish connection to MySQL
         conn = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="madhu@123"
+            host=db_config["host"],
+            user=db_config["user"],
+            password=db_password
         )
+        
         cursor = conn.cursor()
+        
         cursor.execute("USE member_data")
 
         # Check current schema
-
-        # Alter the columns to FLOAT if needed
         try:
             cursor.execute('ALTER TABLE milk1 MODIFY COLUMN AMMOUNT FLOAT')
             cursor.execute('ALTER TABLE milk1 MODIFY COLUMN Quality FLOAT')
@@ -25,7 +37,7 @@ def connect_database():
         except mysql.connector.Error as err:
             print(f"Error updating column types: {err}")
 
-        cursor.execute('''
+        cursor.execute(''' 
             CREATE TABLE IF NOT EXISTS milk1 (
                 id VARCHAR(40),
                 Name VARCHAR(20),
@@ -37,7 +49,7 @@ def connect_database():
             )
         ''')
         
-        cursor.execute('''
+        cursor.execute(''' 
             CREATE TABLE IF NOT EXISTS history_rec (
                 id VARCHAR(40),
                 Name VARCHAR(20),
@@ -76,14 +88,14 @@ def insert(Id, Name, Quality, Type, AMMOUNT, mail, date):
     cursor.execute(
         "INSERT INTO milk1 (id, Name, Quality, Type, AMMOUNT, mail, date) VALUES (%s, %s, %s, %s, %s, %s, %s)",
         (Id, Name, Quality, Type, AMMOUNT, mail, date)
-        
     )
     conn.commit()
+
 def insert1(Id, Name, Quality, Type, Ammount, mail, date):
     cursor.execute(
-                "INSERT INTO history_rec(Id, Name, mail, Quality, Type, AMMOUNT, date) VALUES (%s, %s, %s, %s, %s, %s, %s)",
-                (Id, Name, mail, Quality, Type, Ammount, date))
-    
+        "INSERT INTO history_rec(Id, Name, mail, Quality, Type, AMMOUNT, date) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+        (Id, Name, mail, Quality, Type, Ammount, date)
+    )
     conn.commit()
 
 # ---------------------- Fetch ----------------------
@@ -107,7 +119,7 @@ def update(Id, Name, Quality, Type, Ammount, mail, date):
                 (Id, Name, mail, Quality, Type, Ammount, date))
 
         cursor.execute("SELECT Quality, AMMOUNT FROM milk1 WHERE Id = %s", (Id,))
-        result = cursor.fetchall()  # Process the result before the next query
+        result = cursor.fetchall()
 
         if result:
             old_quality, old_amount = result[0]
@@ -138,11 +150,11 @@ def id_exists(id,name):
     cursor.execute("SELECT COUNT(*) FROM data1 WHERE id=%s AND name=%s", (id,name))
     result = cursor.fetchone()
     return result[0] > 0
+
 def id_exists1(id):
-    cursor.execute("SELECT COUNT(*) FROM milk1 WHERE id=%s ", (id,))
+    cursor.execute("SELECT COUNT(*) FROM milk1 WHERE id=%s", (id,))
     result = cursor.fetchone()
     return result[0] > 0
-
 
 # ---------------------- Close Connection ----------------------
 def close_connection():

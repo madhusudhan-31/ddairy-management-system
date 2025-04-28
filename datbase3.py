@@ -1,18 +1,31 @@
 import mysql.connector
 from customtkinter import *
 from tkinter import messagebox
-from datetime import datetime
+from dotenv import load_dotenv
+import os
+from db_password_prompt import get_password
+# ---------------------- Load Environment Variables ----------------------
+import json
+
+
 
 # ---------------------- Connect to Database ----------------------
 def connect_database():
-    global cursor 
-    global conn 
+    global cursor
+    global conn
     try:
+        # Load the configuration from the JSON file
+        with open("db_config.json") as config_file:
+            db_config = json.load(config_file)
+        db_password = get_password()
+
+        # Establish connection to MySQL
         conn = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="madhu@123"
+            host=db_config["host"],
+            user=db_config["user"],
+            password=db_password
         )
+        
         cursor = conn.cursor()
         cursor.execute("USE member_data")
         cursor.execute('''

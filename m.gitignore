@@ -6,3 +6,7 @@ __pycache__/
 *.log
 *.bak
 *.swp
+*.json           # Ignore all JSON files
+
+
+

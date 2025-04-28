@@ -1,18 +1,27 @@
 import mysql.connector
 from tkinter import messagebox
+import json
+from db_password_prompt import get_password
 
 def connect_database():
     global cursor
     global conn
     try:
+        # Load the configuration from the JSON file
+        with open("db_config.json") as config_file:
+            db_config = json.load(config_file)
+        db_password = get_password()
+
+        # Establish connection to MySQL
         conn = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="madhu@123"
+            host=db_config["host"],
+            user=db_config["user"],
+            password=db_password
         )
+        
         cursor = conn.cursor()
         
-        # Create the database
+        # Create the database if it doesn't exist
         cursor.execute("CREATE DATABASE IF NOT EXISTS member_data")
         cursor.execute("USE member_data")
 
@@ -65,7 +74,7 @@ def fetch_restore(id):
     record = cursor.fetchall()
     if record:
         cursor.execute("INSERT INTO member_restore (ID, Name, Phone, Gender, Place) VALUES (%s, %s, %s, %s, %s)", 
-                           (record[0], record[1], record[2], record[3], record[4]))
+                       (record[0], record[1], record[2], record[3], record[4]))
         conn.commit()
     cursor.execute("SELECT * FROM member_restore")
     result = cursor.fetchall()
@@ -75,9 +84,6 @@ def update(id, new_name, new_phon, new_gender, new_palce):
     cursor.execute("UPDATE data1 SET Name=%s, Phone=%s, Gender=%s, Place=%s WHERE ID=%s", 
                    (new_name, new_phon, new_gender, new_palce, id))
     conn.commit()
-    
-   
-
     messagebox.showinfo("Success", f"Member with ID {id} updated successfully.")
 
 def delete(id):
